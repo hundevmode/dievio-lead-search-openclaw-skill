@@ -230,8 +230,8 @@ def build_parser():
     linkedin.add_argument("--api-key", help="Override DIEVIO_API_KEY.")
     linkedin.add_argument(
         "--auth-mode",
-        choices=["api-bearer", "x-api-key"],
-        default="api-bearer",
+        choices=["bearer", "x-api-key"],
+        default="bearer",
         help="Authentication mode.",
     )
     linkedin.add_argument("--page", type=int, help="Override _page.")
@@ -249,11 +249,6 @@ def build_parser():
 def main():
     parser = build_parser()
     args = parser.parse_args()
-
-    # Normalize CLI choice to shared header mode naming.
-    if hasattr(args, "auth_mode") and args.command == "linkedin-lookup":
-        if args.auth_mode == "api-bearer":
-            args.auth_mode = "bearer"
 
     try:
         return args.func(args)

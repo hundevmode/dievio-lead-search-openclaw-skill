@@ -1,6 +1,16 @@
 ---
 name: dievio-lead-search-api
 description: Run Dievio lead search and LinkedIn lookup workflows through the public API with correct authentication, filters, pagination, and credit-aware handling. Use this skill when users need to find B2B leads, enrich LinkedIn URLs with emails/phones, apply Dievio filter fields, or iterate across paginated API results safely.
+compatibility: Requires network access and valid Dievio API key
+metadata:
+  author: hundevmode
+  version: "1.0"
+  clawdbot:
+    homepage: "https://dievio.com"
+    source: "https://github.com/hundevmode/dievio-lead-search-openclaw-skill"
+    requires:
+      env:
+        - DIEVIO_API_KEY
 ---
 
 # Dievio Lead Search Api

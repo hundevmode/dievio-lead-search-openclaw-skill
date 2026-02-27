@@ -117,6 +117,9 @@ python3 scripts/dievio_api.py search \
   --auto-paginate
 ```
 
+Default output is summary-only (safe for logs).  
+If you need full row payloads, pass `--raw-output`.
+
 ### LinkedIn lookup (URL list)
 
 ```bash

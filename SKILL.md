@@ -66,6 +66,9 @@ python3 scripts/dievio_api.py search \
   --auto-paginate
 ```
 
+By default the CLI prints a safe summary.
+Use `--raw-output` only when you explicitly need full rows (which may contain emails/phones).
+
 LinkedIn lookup from URLs:
 
 ```bash

@@ -8,7 +8,7 @@ import urllib.error
 import urllib.request
 
 
-BASE_URL = os.getenv("DIEVIO_BASE_URL", "https://dievio.com").rstrip("/")
+BASE_URL = "https://dievio.com"
 SEARCH_PATH = "/api/public/search"
 LINKEDIN_LOOKUP_PATH = "/api/linkedin/lookup"
 
@@ -74,8 +74,44 @@ def _override_paging(payload, page=None, per_page=None, max_results=None):
     return out
 
 
-def _emit(status_code, data):
-    print(json.dumps({"status_code": status_code, "data": data}, indent=2, ensure_ascii=True))
+def _summarize_payload(data):
+    if not isinstance(data, dict):
+        return data
+
+    summary = {}
+    passthrough_keys = [
+        "success",
+        "message",
+        "count",
+        "preview_count",
+        "total_count",
+        "page",
+        "per_page",
+        "total_pages",
+        "has_more",
+        "next_page",
+        "max_results",
+        "search_id",
+        "counting",
+        "error",
+    ]
+    for key in passthrough_keys:
+        if key in data:
+            summary[key] = data[key]
+
+    if "preview_data" in data and isinstance(data["preview_data"], list):
+        summary["preview_data_rows"] = len(data["preview_data"])
+    if "data" in data and isinstance(data["data"], list):
+        summary["data_rows"] = len(data["data"])
+
+    if not summary:
+        return data
+    return summary
+
+
+def _emit(status_code, data, raw_output=False):
+    payload = data if raw_output else _summarize_payload(data)
+    print(json.dumps({"status_code": status_code, "data": payload}, indent=2, ensure_ascii=True))
 
 
 def _paginate(path, payload, headers, timeout, max_pages, sleep_seconds):
@@ -143,7 +179,7 @@ def cmd_search(args):
     else:
         status_code, data = _request("POST", SEARCH_PATH, headers, body, args.timeout)
 
-    _emit(status_code, data)
+    _emit(status_code, data, raw_output=args.raw_output)
     return 0 if status_code and status_code < 400 else 1
 
 
@@ -176,7 +212,7 @@ def cmd_linkedin_lookup(args):
     else:
         status_code, data = _request("POST", LINKEDIN_LOOKUP_PATH, headers, body, args.timeout)
 
-    _emit(status_code, data)
+    _emit(status_code, data, raw_output=args.raw_output)
     return 0 if status_code and status_code < 400 else 1
 
 
@@ -202,6 +238,11 @@ def build_parser():
     search.add_argument("--max-pages", type=int, default=0, help="Cap pages when auto-paginating (0 = no cap).")
     search.add_argument("--sleep-seconds", type=float, default=0.0, help="Delay between page requests.")
     search.add_argument("--timeout", type=int, default=60, help="HTTP timeout in seconds.")
+    search.add_argument(
+        "--raw-output",
+        action="store_true",
+        help="Print full API payload (may include PII).",
+    )
     search.set_defaults(func=cmd_search)
 
     linkedin = sub.add_parser("linkedin-lookup", help="Run POST /api/linkedin/lookup.")
@@ -241,6 +282,11 @@ def build_parser():
     linkedin.add_argument("--max-pages", type=int, default=0, help="Cap pages when auto-paginating (0 = no cap).")
     linkedin.add_argument("--sleep-seconds", type=float, default=0.0, help="Delay between page requests.")
     linkedin.add_argument("--timeout", type=int, default=60, help="HTTP timeout in seconds.")
+    linkedin.add_argument(
+        "--raw-output",
+        action="store_true",
+        help="Print full API payload (may include PII).",
+    )
     linkedin.set_defaults(func=cmd_linkedin_lookup)
 
     return parser
